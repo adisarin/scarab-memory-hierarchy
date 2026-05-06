@@ -29,6 +29,7 @@
  ***************************************************************************************/
 
 #include "dcache_stage.h"
+#include "three_c_classifier.h"
 
 #include "globals/assert.h"
 #include "globals/global_defs.h"
@@ -106,6 +107,7 @@ void init_dcache_stage(uns8 proc_id, const char* name) {
 
   /* initialize the cache structure */
   init_cache(&dc->dcache, "DCACHE", DCACHE_SIZE, DCACHE_ASSOC, DCACHE_LINE_SIZE, sizeof(Dcache_Data), DCACHE_REPL);
+  three_c_init(DCACHE_SIZE / DCACHE_LINE_SIZE);
   reset_dcache_stage();
 
   dc->ports = (Ports*)malloc(sizeof(Ports) * DCACHE_BANKS);
@@ -629,6 +631,7 @@ static inline void dcache_cacheline_miss(Op* op, Addr line_addr) {
 
       if (!op->off_path) {
         STAT_EVENT(op->proc_id, DCACHE_MISS);
+        { Miss_3C_Type _t = three_c_classify(line_addr); if(_t==MISS_COMPULSORY) STAT_EVENT(op->proc_id, DCACHE_MISS_COMPULSORY); else if(_t==MISS_CAPACITY) STAT_EVENT(op->proc_id, DCACHE_MISS_CAPACITY); else STAT_EVENT(op->proc_id, DCACHE_MISS_CONFLICT); }
         STAT_EVENT(op->proc_id, DCACHE_MISS_ONPATH);
         STAT_EVENT(op->proc_id, DCACHE_MISS_LD_ONPATH);
         op->oracle_info.dcmiss = TRUE;
@@ -658,6 +661,7 @@ static inline void dcache_cacheline_miss(Op* op, Addr line_addr) {
 
       if (!op->off_path) {
         STAT_EVENT(op->proc_id, DCACHE_MISS);
+        { Miss_3C_Type _t = three_c_classify(line_addr); if(_t==MISS_COMPULSORY) STAT_EVENT(op->proc_id, DCACHE_MISS_COMPULSORY); else if(_t==MISS_CAPACITY) STAT_EVENT(op->proc_id, DCACHE_MISS_CAPACITY); else STAT_EVENT(op->proc_id, DCACHE_MISS_CONFLICT); }
         STAT_EVENT(op->proc_id, DCACHE_MISS_ONPATH);
         STAT_EVENT(op->proc_id, DCACHE_MISS_LD_ONPATH);
         op->oracle_info.dcmiss = TRUE;
@@ -689,6 +693,7 @@ static inline void dcache_cacheline_miss(Op* op, Addr line_addr) {
 
       if (!op->off_path) {
         STAT_EVENT(op->proc_id, DCACHE_MISS);
+        { Miss_3C_Type _t = three_c_classify(line_addr); if(_t==MISS_COMPULSORY) STAT_EVENT(op->proc_id, DCACHE_MISS_COMPULSORY); else if(_t==MISS_CAPACITY) STAT_EVENT(op->proc_id, DCACHE_MISS_CAPACITY); else STAT_EVENT(op->proc_id, DCACHE_MISS_CONFLICT); }
         STAT_EVENT(op->proc_id, DCACHE_MISS_ONPATH);
         STAT_EVENT(op->proc_id, DCACHE_MISS_ST_ONPATH);
         op->oracle_info.dcmiss = TRUE;
